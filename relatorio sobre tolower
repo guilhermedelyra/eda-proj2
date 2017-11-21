@@ -1,0 +1,33 @@
+bom, demorei um tempo pra entender o que era o 0x60 e por que este estava sendo utilizado; depois, entendi que se tratava do numero decimal 96 que, em binário é: 1100000; sabendo que os caracteres em maíusculo necessariamente precisam ter o primeiro bit ligado (de 64) [pois estes começam na posição 65 da tabela ascii], é possivel notar que essa operação de OR sempre vai adicionar 32 no caracter, que é a exata posição, na tabela ascii, de seu equivalente minúsculo.
+
+exemplo:
+
+1000001 = 65 = A
+or
+1100000 = 96 = `
+_______
+1100001 = 97 = a
+(ligou o bit 32; 65 + 32 = 97 = a)
+
+
+mais um exemplo:
+
+1001010 = 74 = J
+or
+1100000 = 96 = `
+_______
+1101010 = 106 = j
+(ligou o bit 32; 74 + 32 = 106 = j)
+
+depois, fiz um teste usando a funçao com o or 0x60 e utilizando a forma que acreditei ser naive (ingênua): percorrer a string e ir utilizando a funçao "tolower()".
+
+pra minha infeliz surpresa, ambas as funções apresentaram o mesmo desempenho ao tratarem uma entrada de aproximadamente 225mb: 2.6~ segundos.
+
+
+referencias:
+
+https://stackoverflow.com/questions/2661766/c-convert-a-mixed-case-string-to-all-lower-case
+
+https://gist.github.com/zed/370497
+
+acesso em: 21/11/2017 10:33AM
