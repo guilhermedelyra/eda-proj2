@@ -28,6 +28,9 @@ struct words{
 };
 typedef struct words Words;
 
+int nPalavras;
+Words *vetor;
+
 /* Retorna true se a palavra estah no dicionario. Do contrario, retorna false */
 bool conferePalavra(const char *palavra) {
 
@@ -58,7 +61,6 @@ int countlines(const char *filename){
 bool carregaDicionario(const char *dicionario) {
 
     FILE * pFile = fopen (dicionario,"rt");;
-    Words *vetor;
     long size = 0;
 
     if (pFile==NULL){
@@ -75,6 +77,7 @@ bool carregaDicionario(const char *dicionario) {
 
     long i = 0;
     while(fgets(vetor[i++].palavra, sizeof(Words), pFile)!= NULL);
+    nPalavras = i-1;
 
     fclose(pFile);
 
@@ -85,9 +88,8 @@ bool carregaDicionario(const char *dicionario) {
 /* Retorna qtde palavras do dicionario, se carregado; senao carregado retorna zero */
 unsigned int contaPalavrasDic(void) {
 
-    /* construa essa funcao */
+    return nPalavras;
 
-    return 0;
 } /* fim-contaPalavrasDic */
 
 
@@ -191,7 +193,7 @@ int main(int argc, char *argv[]) {
             tempo_check += calcula_tempo(&tempo_inicial, &tempo_final);
             /* imprime palavra se nao encontrada no dicionario */
             if (palavraErrada) {
-                printf("%s\n", palavra);
+                //printf("%s\n", palavra);
                 totPalErradas++;
             } /* fim-if */
             /* faz "reset" no indice para recuperar nova palavra no arquivo-texto*/
@@ -226,7 +228,7 @@ int main(int argc, char *argv[]) {
     /* aborta se o dicionario nao estiver carregado */
     if (!descarga) {
         printf("Nao foi necessario fazer limpeza da memoria\n");
-        return ERRO_DICIO_NAOCARREGADO;
+        //return ERRO_DICIO_NAOCARREGADO;
     } /* fim-if */
 
     /* calcula tempo para descarregar o dicionario */
@@ -235,7 +237,7 @@ int main(int argc, char *argv[]) {
     /* RESULTADOS ENCONTRADOS */
     printf("\nTOTAL DE PALAVRAS ERRADAS NO TEXTO    : %d\n",   totPalErradas);
     printf("TOTAL DE PALAVRAS DO DICIONARIO         : %d\n",   qtdePalavrasDic);
-    printf("TOTAL DE PALAVRAS DO TEXTO              : %d\n",   totPalavras);
+    printf("TOTAL DE PALAVRAS DO TEXTO              : %d\n",   totPalavras+1);
     printf("TEMPO GASTO COM CARGA DO DICIONARIO     : %.2f\n", tempo_carga);
     printf("TEMPO GASTO COM CHECK DO ARQUIVO        : %.2f\n", tempo_check);
     printf("TEMPO GASTO P CALCULO TAMANHO DICIONARIO: %.2f\n", tempo_calc_tamanho_dic);
