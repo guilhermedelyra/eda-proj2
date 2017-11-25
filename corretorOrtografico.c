@@ -9,11 +9,6 @@
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <stdbool.h>
-#include <string.h>
-
-#define malc(x) (x *) malloc(sizeof(x))
-#define nl ; printf("\n")
-#define max(a, b) ((a > b) ? (a) : (b))
 
 /* Tamanho maximo de uma palavra do dicionario */
 #define TAM_MAX 45
@@ -28,19 +23,15 @@
 #define ARQTEXTO_ERROLEITURA    4
 #define ERRO_DICIO_NAOCARREGADO 5
 
-typedef struct words{
+struct words{
     char palavra[TAM_MAX];
-} Words; Words *vetor = NULL;
-
-
-int nPalavras = 0;
-
+};
+typedef struct words Words;
 
 /* Retorna true se a palavra estah no dicionario. Do contrario, retorna false */
 bool conferePalavra(const char *palavra) {
 
     /* construa essa funcao */
-
 
     return false;
 } /* fim-conferePalavra */
@@ -66,18 +57,24 @@ int countlines(const char *filename){
 /* Carrega dicionario na memoria. Retorna true se sucesso; senao retorna false. */
 bool carregaDicionario(const char *dicionario) {
 
-    FILE * pFile = fopen (dicionario,"rt");
-    long size = 0, i = 0;
+    FILE * pFile = fopen (dicionario,"rt");;
+    Words *vetor;
+    long size = 0;
 
     if (pFile==NULL){
         return false;
     }
 
-    vetor = malc(Words);
+    size=countlines(dicionario);
 
-    while(fgets(vetor[i++].palavra, TAM_MAX, pFile) != NULL);
-    
-    nPalavras = i-1;
+
+    if (size!=0)
+        vetor = (Words *) malloc(size*sizeof(Words));
+
+    rewind(pFile);
+
+    long i = 0;
+    while(fgets(vetor[i++].palavra, sizeof(Words), pFile)!= NULL);
 
     fclose(pFile);
 
@@ -88,8 +85,9 @@ bool carregaDicionario(const char *dicionario) {
 /* Retorna qtde palavras do dicionario, se carregado; senao carregado retorna zero */
 unsigned int contaPalavrasDic(void) {
 
-    return nPalavras;
+    /* construa essa funcao */
 
+    return 0;
 } /* fim-contaPalavrasDic */
 
 
@@ -193,7 +191,7 @@ int main(int argc, char *argv[]) {
             tempo_check += calcula_tempo(&tempo_inicial, &tempo_final);
             /* imprime palavra se nao encontrada no dicionario */
             if (palavraErrada) {
-                //printf("%s\n", palavra);
+                printf("%s\n", palavra);
                 totPalErradas++;
             } /* fim-if */
             /* faz "reset" no indice para recuperar nova palavra no arquivo-texto*/
@@ -228,7 +226,7 @@ int main(int argc, char *argv[]) {
     /* aborta se o dicionario nao estiver carregado */
     if (!descarga) {
         printf("Nao foi necessario fazer limpeza da memoria\n");
-        //return ERRO_DICIO_NAOCARREGADO;
+        return ERRO_DICIO_NAOCARREGADO;
     } /* fim-if */
 
     /* calcula tempo para descarregar o dicionario */
@@ -237,7 +235,7 @@ int main(int argc, char *argv[]) {
     /* RESULTADOS ENCONTRADOS */
     printf("\nTOTAL DE PALAVRAS ERRADAS NO TEXTO    : %d\n",   totPalErradas);
     printf("TOTAL DE PALAVRAS DO DICIONARIO         : %d\n",   qtdePalavrasDic);
-    printf("TOTAL DE PALAVRAS DO TEXTO              : %d\n",   totPalavras+1);
+    printf("TOTAL DE PALAVRAS DO TEXTO              : %d\n",   totPalavras);
     printf("TEMPO GASTO COM CARGA DO DICIONARIO     : %.2f\n", tempo_carga);
     printf("TEMPO GASTO COM CHECK DO ARQUIVO        : %.2f\n", tempo_check);
     printf("TEMPO GASTO P CALCULO TAMANHO DICIONARIO: %.2f\n", tempo_calc_tamanho_dic);

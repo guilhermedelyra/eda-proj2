@@ -8,51 +8,20 @@
 #define nl ; printf("\n")
 #define max(a, b) ((a > b) ? (a) : (b))
 
-/* #### ESTRUTURAS DE DADOS FILA, PILHA E ARVORE #### */
-
+/* #### ESTRUTURAS DE DADOS ARVORE #### */
 
 typedef struct _tree {
-	int conteudo, h;
+	char conteudo[46];
+	int h;
 	struct _tree *esq, *dir;
 } arv; arv * raiz;
 
 
-typedef struct _stack {
-   arv *endereco; 
-   struct _stack *prox;
-} pilha; pilha * top = NULL;
-
-
-typedef struct _queue {
-    arv * endereco;
-    struct _queue *next;
-} fila; fila * head = NULL;
-
-
-/* #### PSEUDO-FUNÇÕES PARA MANIPULAÇÃO DE PILHA #### */
-
-
-void empilha (arv *no);
-arv * desempilha ();
-void liberapilha ();
-
-
-/* #### PSEUDO-FUNÇÕES PARA MANIPULAÇÃO DE FILA #### */
-
-void enfileira (arv * endereco);
-arv * desenfileira ();
-void limpa_fila (fila * c);
-
-
 /* #### PSEUDO-FUNÇÕES PARA MANIPULAÇÃO DE ARVORE BINÁRIA DE BUSCA #### */
 
-
-void pre_ordem (arv * raiz);
-void em_ordem (arv * raiz);
-void pos_ordem (arv * raiz);
-void dfs ();
-void bfs ();
-arv * busca (arv * raiz, int el);
+void carregaDicio (char * filename);
+int contaErros (char * filename);
+arv * busca (arv * raiz, char * el);
 void liberaraiz (arv * ra);
 int height (arv * temp);
 int diff (arv * temp);
@@ -61,191 +30,64 @@ arv * ll (arv * parent);
 arv * lr (arv * parent);
 arv * rl (arv * parent);
 arv * balance (arv * temp);
-arv * insert (arv * root, int conteudo);
+arv * insert (arv * root, char * conteudo);
 void set_height (arv * root, int height); 
-arv * delete (arv * root, int conteudo);
-arv * min_node (arv * node);
 
-/* ############################################################# */
+
+/* #### MAIN ##### */
 
 int main(){
-	raiz = insert(raiz, 9);
-	raiz = insert(raiz, 5);
-	raiz = insert(raiz, 10);
-	raiz = insert(raiz, 0);
-	raiz = insert(raiz, 6);
-	raiz = insert(raiz, 11);
-	raiz = insert(raiz, -1);
-	raiz = insert(raiz, 1);
-	raiz = insert(raiz, 2);
-
-	set_height (raiz, 0);
-	printf("pre_ordem") nl nl;
-	pre_ordem (raiz) nl nl;
-	printf("em_ordem") nl nl;
-	em_ordem (raiz) nl nl;
-	printf("pos_ordem") nl nl;
-	pos_ordem (raiz) nl nl;
-
-	printf("dfs") nl nl;
-	dfs () nl nl;
-	printf("bfs") nl nl;
-	bfs () nl nl;
-
-	raiz = delete (raiz, 10) nl nl nl;
-
-	set_height (raiz, 0);
-	printf("pre_ordem") nl nl;
-	pre_ordem (raiz) nl nl;
-	printf("em_ordem") nl nl;
-	em_ordem (raiz) nl nl;
-	printf("pos_ordem") nl nl;
-	pos_ordem (raiz) nl nl;
-
-	printf("dfs") nl nl;
-	dfs () nl nl;
-	printf("bfs") nl nl;
-	bfs () nl nl;
-
-	liberaraiz(raiz);
-
+	carregaDicio("test.txt");
+	printf("%d\n", contaErros("test1.txt"));
 	return 0;
 }
-
-/* #### FUNÇÕES PARA MANIPULAÇÃO DE PILHA #### */
-
-
-void empilha (arv *no) {
-	pilha *new = malc (pilha);
-	new->endereco = no;
-	if(top == NULL) new->prox = NULL;
-	else new->prox = top;
-	top = new;
-}
-
-arv * desempilha () {
-	if(top != NULL) {
-		pilha *temp = top;
-		arv *x = top->endereco;
-		top = temp->prox;
-		free(temp);
-		return x;
-	} else return NULL;
-}
-
-
-void liberapilha () {
-	while (top != NULL) {
-		desempilha ();
-	}
-}
-
-
-/* #### FUNÇÕES PARA MANIPULAÇÃO DE FILA #### */
-
-
-void enfileira (arv * endereco) {
-	fila *new = malc(fila);
-	if (!new) return;
-
-	new->endereco = endereco;
-	new->next = head;
-
-	head = new;
-}
-
-arv * desenfileira () {
-	fila *current, *prev = NULL;
-	arv * tmp;
-
-	if (head == NULL) return NULL;
-
-	current = head;
-
-	while (current->next != NULL) {
-		prev = current;
-		current = current->next;
-	}
-
-	tmp = current->endereco;
-	free(current);
-
-	if (prev) prev->next = NULL;
-	else head = NULL;
-
-	return tmp;
-}
-
-
-void limpa_fila (fila * c) {
-	while (head != NULL) {
-		limpa_fila (c->next);
-		free(c);
-	}
-}
-
 
 /* #### FUNÇÕES PARA MANIPULAÇÃO DE AVL #### */
 
 
-void pre_ordem (arv * raiz) {
-	if(raiz != NULL){
-		printf ("%d [%d] - ", raiz->conteudo, raiz->h);
-		pre_ordem (raiz->esq);
-		pre_ordem (raiz->dir);
+void carregaDicio (char * filename) {
+	FILE *fp = fopen(filename, "r");
+	char c[46];
+
+	if (fp == NULL) return;
+
+	while (fscanf(fp, "%s", c) > 0) {
+		raiz = insert(raiz, c);
 	}
+
+
+	fclose(fp);
 }
 
 
-void em_ordem (arv * raiz) {
-	if(raiz != NULL){
-		pre_ordem (raiz->esq);
-		printf ("%d [%d] - ", raiz->conteudo, raiz->h);
-		pre_ordem (raiz->dir);
+int contaErros (char * filename) {
+	FILE *fp = fopen(filename, "r");
+	arv * tmp;
+	int ans = 0, i = 0;
+	char c[46], d;
+
+	if (fp == NULL) return 0;
+
+	for(d = getc(fp); d != EOF; d = getc(fp)) {
+		d = tolower(d);
+		if ((d >= 97 && d <= 122) || d == 39) c[i++] = d;
+		else {
+			c[i++] = '\0';
+			tmp = busca (raiz, c);
+			if (tmp == NULL) ans++;
+			memset(c, 0, sizeof(c)); i = 0;
+		}
 	}
+	fclose(fp);
+
+	return ans;
 }
 
 
-void pos_ordem (arv * raiz) {
-	if(raiz != NULL){
-		pre_ordem (raiz->esq);
-		pre_ordem (raiz->dir);
-		printf ("%d [%d] - ", raiz->conteudo, raiz->h);
-	}
-}
-
-
-void dfs () {
-	if (raiz == NULL) return;
-	arv *tmp = raiz;
-	empilha (tmp);
-	while (top) {
-		printf ("%d [%d] - ", tmp->conteudo, tmp->h);
-		if (tmp->esq != NULL) empilha (tmp->esq);
-		if (tmp->dir != NULL) empilha (tmp->dir);
-		tmp = desempilha ();
-	}
-	liberapilha (); 
-}
-
-
-void bfs () {
-	if (raiz == NULL) return;
-	arv * tmp = raiz;
-	enfileira (raiz);
-	while(head != NULL){
-		tmp = desenfileira ();
-		printf ("%d [%d] - ", tmp->conteudo, tmp->h);
-		if (tmp->esq != NULL) enfileira (tmp->esq);
-		if (tmp->dir != NULL) enfileira (tmp->dir);
-	}
-	limpa_fila (head);
-}
-
-arv * busca (arv * raiz, int el) {
+arv * busca (arv * raiz, char * el) {
 	if (raiz != NULL) {
-		if (raiz->conteudo > el) return busca (raiz->esq, el);
-		if (raiz->conteudo < el) return busca (raiz->dir, el);
+		if (strcmp(raiz->conteudo, el) > 0) return busca (raiz->esq, el);
+		if (strcmp(raiz->conteudo, el) < 0) return busca (raiz->dir, el);
 		return raiz;
 	} else return NULL;
 }
@@ -330,58 +172,19 @@ arv * balance (arv *temp) {
 }
 
 
-arv * insert (arv * root, int conteudo) {
+arv * insert (arv * root, char * conteudo) {
 	if (root == NULL) {
 		root = malc(arv);
-		root->conteudo = conteudo;
+		strcpy(root->conteudo, conteudo);
 		root->esq = NULL;
 		root->dir = NULL;
 		return root;
-	} else if (conteudo < root->conteudo) {
+	} else if (strcmp(conteudo, root->conteudo) < 0) {
 		root->esq = insert (root->esq, conteudo);
 		root = balance (root);
-	} else if (conteudo > root->conteudo) {
+	} else if (strcmp(conteudo, root->conteudo) > 0) {
 		root->dir = insert(root->dir, conteudo);
 		root = balance (root);
 	}
 	return root;
-}
-
-
-arv * delete (arv * root, int conteudo) {
-	if (root == NULL) return root;
-
-	if (conteudo < root->conteudo) root->esq = delete (root->esq, conteudo);
-	else if (conteudo > root->conteudo) root->dir = delete (root->dir, conteudo);
-	else {
-		if ((root->esq == NULL) || (root->dir == NULL)) {
-			arv * temp = root->esq ? root->esq : root->dir;
-		if (temp == NULL) {
-			temp = root;
-			root = NULL;
-		} else *root = *temp;
-			free(temp);
-		} else {
-			arv * temp = min_node (root->dir);
-			root->conteudo = temp->conteudo;
-			root->dir = delete (root->dir, temp->conteudo);
-		}
-	}
-
-	if (root == NULL) return root;
-
-	root->h = 1 + max(height (root->esq), height (root->dir));
-
-	if (diff (root) > 1 && diff (root->esq) >= 0) return ll (root);
-	if (diff (root) > 1 && diff (root->esq) < 0) return lr (root);
-	if (diff (root) < -1 && diff (root->dir) <= 0) return rr (root);
-	if (diff (root) < -1 && diff (root->dir) > 0) return rl (root);
-
-	return root;
-}
-
-arv * min_node (arv * node) {
-	arv * current = node;
-	while (current->esq != NULL) current = current->esq;
-	return current;
 }
