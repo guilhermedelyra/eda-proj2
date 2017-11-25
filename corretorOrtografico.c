@@ -9,6 +9,11 @@
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <stdbool.h>
+#include <string.h>
+
+#define malc(x) (x *) malloc(sizeof(x))
+#define nl ; printf("\n")
+#define max(a, b) ((a > b) ? (a) : (b))
 
 /* Tamanho maximo de uma palavra do dicionario */
 #define TAM_MAX 45
@@ -23,18 +28,19 @@
 #define ARQTEXTO_ERROLEITURA    4
 #define ERRO_DICIO_NAOCARREGADO 5
 
-struct words{
+typedef struct words{
     char palavra[TAM_MAX];
-};
-typedef struct words Words;
+} Words; Words *vetor = NULL;
 
-int nPalavras;
-Words *vetor;
+
+int nPalavras = 0;
+
 
 /* Retorna true se a palavra estah no dicionario. Do contrario, retorna false */
 bool conferePalavra(const char *palavra) {
 
     /* construa essa funcao */
+
 
     return false;
 } /* fim-conferePalavra */
@@ -60,23 +66,17 @@ int countlines(const char *filename){
 /* Carrega dicionario na memoria. Retorna true se sucesso; senao retorna false. */
 bool carregaDicionario(const char *dicionario) {
 
-    FILE * pFile = fopen (dicionario,"rt");;
-    long size = 0;
+    FILE * pFile = fopen (dicionario,"rt");
+    long size = 0, i = 0;
 
     if (pFile==NULL){
         return false;
     }
 
-    size=countlines(dicionario);
+    vetor = malc(Words);
 
-
-    if (size!=0)
-        vetor = (Words *) malloc(size*sizeof(Words));
-
-    rewind(pFile);
-
-    long i = 0;
-    while(fgets(vetor[i++].palavra, sizeof(Words), pFile)!= NULL);
+    while(fgets(vetor[i++].palavra, TAM_MAX, pFile) != NULL);
+    
     nPalavras = i-1;
 
     fclose(pFile);
