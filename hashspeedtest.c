@@ -21,76 +21,170 @@
 #define TAM_MAX                 45
 
 typedef struct _link {
-	char pal[46];
-} link; link a[2289457];
+	char pal[65];
+} link; link a[14];
 
 
-void RSHash (const char* str, unsigned int length);
-void JSHash (const char* str, unsigned int length);
-void PJWHash (const char* str, unsigned int length);
-void ELFHash (const char* str, unsigned int length);
-void BKDRHash (const char* str, unsigned int length);
-void SDBMHash (const char* str, unsigned int length);
-void DJBHash (const char* str, unsigned int length);
-void DEKHash (const char* str, unsigned int length); 
-void APHash (const char* str, unsigned int length);
+int compare (const void * a, const void * b) {
+  return ( *(int*)a - *(int*)b );
+}
+
+unsigned int RSHash (const char* str, unsigned int length);
+unsigned int JSHash (const char* str, unsigned int length);
+unsigned int PJWHash (const char* str, unsigned int length);
+unsigned int ELFHash (const char* str, unsigned int length);
+unsigned int BKDRHash (const char* str, unsigned int length);
+unsigned int SDBMHash (const char* str, unsigned int length);
+unsigned int DJBHash (const char* str, unsigned int length);
+unsigned int DEKHash (const char* str, unsigned int length); 
+unsigned int APHash (const char* str, unsigned int length);
 
 bool carregaDicio (char * filename);
 double calcula_tempo (const struct rusage *b, const struct rusage *a);
 
 
 int main () {
+	FILE *fp;
 	struct rusage tempo_inicial, tempo_final;
 	double RS = 0.0, JS = 0.0, PJW = 0.0, ELF = 0.0, BKDR = 0.0, SDBM = 0.0, DJBH = 0.0, DEKH = 0.0, APH = 0.0;
-	long int i = 0;
+	unsigned int i = 0, rs[14];
 
-
-	carregaDicio ("dicio100x");
+	carregaDicio ("dicioLeve");
 
 	getrusage(RUSAGE_SELF, &tempo_inicial);
-	   for(i = 0; i < 2289457; ++i) RSHash (a[i].pal, strlen(a[i].pal));
+	   for(i = 0; i < 13; ++i) {
+	   		rs[i] = RSHash (a[i].pal, strlen(a[i].pal));
+	   	}
 	getrusage(RUSAGE_SELF, &tempo_final);
 	RS = calcula_tempo(&tempo_inicial, &tempo_final);
 
+	
+	qsort(rs, 13, sizeof(unsigned int), compare);
+	fp = fopen("hashresults/rs.txt", "w");
+
+
+	for(i = 0; i < 13; ++i) fprintf(fp, "%u\n", rs[i]);
+	fclose(fp);
+
 	getrusage(RUSAGE_SELF, &tempo_inicial);
-	   for(i = 0; i < 2289457; ++i) JSHash (a[i].pal, strlen(a[i].pal));
+	   for(i = 0; i < 13; ++i) {
+	   		rs[i] = JSHash (a[i].pal, strlen(a[i].pal));
+	   	}
 	getrusage(RUSAGE_SELF, &tempo_final);
 	JS = calcula_tempo(&tempo_inicial, &tempo_final);
 
+	
+	qsort(rs, 13, sizeof(unsigned int), compare);
+	fp = fopen("hashresults/js.txt", "w");
+
+
+	for(i = 0; i < 13; ++i) fprintf(fp, "%u\n", rs[i]);
+	fclose(fp);
+
 	getrusage(RUSAGE_SELF, &tempo_inicial);
-	   for(i = 0; i < 2289457; ++i) PJWHash (a[i].pal, strlen(a[i].pal));
+	   for(i = 0; i < 13; ++i) {
+	   		rs[i] = PJWHash (a[i].pal, strlen(a[i].pal));
+	   	}
 	getrusage(RUSAGE_SELF, &tempo_final);
 	PJW = calcula_tempo(&tempo_inicial, &tempo_final);
 
+	
+	qsort(rs, 13, sizeof(unsigned int), compare);
+	fp = fopen("hashresults/pjw.txt", "w");
+
+
+	for(i = 0; i < 13; ++i) fprintf(fp, "%u\n", rs[i]);
+	fclose(fp);
+
 	getrusage(RUSAGE_SELF, &tempo_inicial);
-	   for(i = 0; i < 2289457; ++i) ELFHash (a[i].pal, strlen(a[i].pal));
+	   for(i = 0; i < 13; ++i) {
+	   		rs[i] = ELFHash (a[i].pal, strlen(a[i].pal));
+	   	}
 	getrusage(RUSAGE_SELF, &tempo_final);
 	ELF = calcula_tempo(&tempo_inicial, &tempo_final);
 
+	
+	qsort(rs, 13, sizeof(unsigned int), compare);
+	fp = fopen("hashresults/elf.txt", "w");
+
+
+	for(i = 0; i < 13; ++i) fprintf(fp, "%u\n", rs[i]);
+	fclose(fp);
+
 	getrusage(RUSAGE_SELF, &tempo_inicial);
-	   for(i = 0; i < 2289457; ++i) BKDRHash (a[i].pal, strlen(a[i].pal));
+	   for(i = 0; i < 13; ++i) {
+	   		rs[i] = BKDRHash (a[i].pal, strlen(a[i].pal));
+	   	}
 	getrusage(RUSAGE_SELF, &tempo_final);
 	BKDR = calcula_tempo(&tempo_inicial, &tempo_final);
 
+	
+	qsort(rs, 13, sizeof(unsigned int), compare);
+	fp = fopen("hashresults/bkdr.txt", "w");
+
+
+	for(i = 0; i < 13; ++i) fprintf(fp, "%u\n", rs[i]);
+	fclose(fp);
+
 	getrusage(RUSAGE_SELF, &tempo_inicial);
-	   for(i = 0; i < 2289457; ++i) SDBMHash (a[i].pal, strlen(a[i].pal));
+	   for(i = 0; i < 13; ++i) {
+	   		rs[i] = SDBMHash (a[i].pal, strlen(a[i].pal));
+	   	}
 	getrusage(RUSAGE_SELF, &tempo_final);
 	SDBM = calcula_tempo(&tempo_inicial, &tempo_final);
 
+	
+	qsort(rs, 13, sizeof(unsigned int), compare);
+	fp = fopen("hashresults/sdbm.txt", "w");
+
+
+	for(i = 0; i < 13; ++i) fprintf(fp, "%u\n", rs[i]);
+	fclose(fp);
+
 	getrusage(RUSAGE_SELF, &tempo_inicial);
-	   for(i = 0; i < 2289457; ++i) DJBHash (a[i].pal, strlen(a[i].pal));
+	   for(i = 0; i < 13; ++i) {
+	   		rs[i] = DJBHash (a[i].pal, strlen(a[i].pal));
+	   	}
 	getrusage(RUSAGE_SELF, &tempo_final);
 	DJBH = calcula_tempo(&tempo_inicial, &tempo_final);
 
+	
+	qsort(rs, 13, sizeof(unsigned int), compare);
+	fp = fopen("hashresults/djbh.txt", "w");
+
+
+	for(i = 0; i < 13; ++i) fprintf(fp, "%u\n", rs[i]);
+	fclose(fp);
+
 	getrusage(RUSAGE_SELF, &tempo_inicial);
-	   for(i = 0; i < 2289457; ++i) DEKHash (a[i].pal, strlen(a[i].pal));
+	   for(i = 0; i < 13; ++i) {
+	   		rs[i] = DEKHash (a[i].pal, strlen(a[i].pal));
+	   	}
 	getrusage(RUSAGE_SELF, &tempo_final);
 	DEKH = calcula_tempo(&tempo_inicial, &tempo_final);
 
+	
+	qsort(rs, 13, sizeof(unsigned int), compare);
+	fp = fopen("hashresults/dekh.txt", "w");
+
+
+	for(i = 0; i < 13; ++i) fprintf(fp, "%u\n", rs[i]);
+	fclose(fp);
+
 	getrusage(RUSAGE_SELF, &tempo_inicial);
-	   for(i = 0; i < 2289457; ++i) APHash (a[i].pal, strlen(a[i].pal));
+	   for(i = 0; i < 13; ++i) {
+	   		rs[i] = APHash (a[i].pal, strlen(a[i].pal));
+	   	}
 	getrusage(RUSAGE_SELF, &tempo_final);
 	APH = calcula_tempo(&tempo_inicial, &tempo_final);
+
+	
+	qsort(rs, 13, sizeof(unsigned int), compare);
+	fp = fopen("hashresults/aph.txt", "w");
+
+
+	for(i = 0; i < 13; ++i) fprintf(fp, "%u\n", rs[i]);
+	fclose(fp);
 
 	printf("RS %.5f\n", RS);
 	printf("JS %.5f\n", JS);
@@ -101,6 +195,7 @@ int main () {
 	printf("DJBH %.5f\n", DJBH);
 	printf("DEKH %.5f\n", DEKH);
 	printf("APH %.5f\n", APH);
+
 	return 0;
 }
 
@@ -120,7 +215,7 @@ double calcula_tempo (const struct rusage *b, const struct rusage *a) {
 bool carregaDicio (char * filename) {
 	FILE *fp = fopen(filename, "r");
 	long int i = 0;
-	char c[46];
+	char c[65];
 
 	if (fp == NULL) return false;
 
@@ -134,7 +229,7 @@ bool carregaDicio (char * filename) {
 }
 
 
-void RSHash (const char* str, unsigned int length) {
+unsigned int RSHash (const char* str, unsigned int length) {
    unsigned int b    = 378551;
    unsigned int a    = 63689;
    unsigned int hash = 0;
@@ -146,10 +241,10 @@ void RSHash (const char* str, unsigned int length) {
       a    = a * b;
    }
 
-   return;
+   return hash;
 }
 
-void JSHash (const char* str, unsigned int length) {
+unsigned int JSHash (const char* str, unsigned int length) {
    unsigned int hash = 1315423911;
    unsigned int i    = 0;
 
@@ -158,11 +253,11 @@ void JSHash (const char* str, unsigned int length) {
       hash ^= ((hash << 5) + (*str) + (hash >> 2));
    }
 
-   return;
+   return hash;
 }
 
-void PJWHash (const char* str, unsigned int length) {
-   const unsigned int BitsInUnsignedInt = (unsigned int)(sizeof(unsigned int) * 8);
+unsigned int PJWHash (const char* str, unsigned int length) {
+   const unsigned int BitsInUnsignedInt = (unsigned int)(sizeof(long int) * 8);
    const unsigned int ThreeQuarters     = (unsigned int)((BitsInUnsignedInt  * 3) / 4);
    const unsigned int OneEighth         = (unsigned int)(BitsInUnsignedInt / 8);
    const unsigned int HighBits          =
@@ -181,10 +276,10 @@ void PJWHash (const char* str, unsigned int length) {
       }
    }
 
-   return;
+   return hash;
 }
 
-void ELFHash (const char* str, unsigned int length) {
+unsigned int ELFHash (const char* str, unsigned int length) {
    unsigned int hash = 0;
    unsigned int x    = 0;
    unsigned int i    = 0;
@@ -201,10 +296,10 @@ void ELFHash (const char* str, unsigned int length) {
       hash &= ~x;
    }
 
-   return;
+   return hash;
 }
 
-void BKDRHash (const char* str, unsigned int length) {
+unsigned int BKDRHash (const char* str, unsigned int length) {
    unsigned int seed = 131; /* 31 131 1313 13131 131313 etc.. */
    unsigned int hash = 0;
    unsigned int i    = 0;
@@ -214,10 +309,10 @@ void BKDRHash (const char* str, unsigned int length) {
       hash = (hash * seed) + (*str);
    }
 
-   return;
+   return hash;
 }
 
-void SDBMHash (const char* str, unsigned int length) {
+unsigned int SDBMHash (const char* str, unsigned int length) {
    unsigned int hash = 0;
    unsigned int i    = 0;
 
@@ -226,10 +321,10 @@ void SDBMHash (const char* str, unsigned int length) {
       hash = (*str) + (hash << 6) + (hash << 16) - hash;
    }
 
-   return;
+   return hash;
 }
 
-void DJBHash (const char* str, unsigned int length) {
+unsigned int DJBHash (const char* str, unsigned int length) {
    unsigned int hash = 5381;
    unsigned int i    = 0;
 
@@ -238,10 +333,10 @@ void DJBHash (const char* str, unsigned int length) {
       hash = ((hash << 5) + hash) + (*str);
    }
 
-   return;
+   return hash;
 }
 
-void DEKHash (const char* str, unsigned int length) {
+unsigned int DEKHash (const char* str, unsigned int length) {
    unsigned int hash = length;
    unsigned int i    = 0;
 
@@ -250,10 +345,10 @@ void DEKHash (const char* str, unsigned int length) {
       hash = ((hash << 5) ^ (hash >> 27)) ^ (*str);
    }
 
-   return;
+   return hash;
 }
 
-void APHash (const char* str, unsigned int length) {
+unsigned int APHash (const char* str, unsigned int length) {
    unsigned int hash = 0xAAAAAAAA;
    unsigned int i    = 0;
 
@@ -263,5 +358,5 @@ void APHash (const char* str, unsigned int length) {
                                (~((hash << 11) + ((*str) ^ (hash >> 5))));
    }
 
-   return;
+   return hash;
 }
