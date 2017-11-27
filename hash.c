@@ -20,43 +20,190 @@
 #define ERRO_DICIO_NAOCARREGADO 5
 #define TAM_MAX                 45
 
-typedef struct _link {
-	char pal[65];
-	bool present, collision;
-	char *pal[]
-} link; link a[1049939];
+typedef struct _char {
+  char palavra[46];
+  bool present;
+  int qtdColisoes;
+  struct _char *c[1];
+} ch; ch b[11380005];
 
 
+typedef struct _tripair {
+  int qtdErros, qtdPalavras;
+  double tempoCheck;
+} tripair;
 
 
-
-unsigned int PJWHash (const char* str, unsigned int length);
 bool carregaDicio (char * filename);
 double calcula_tempo (const struct rusage *b, const struct rusage *a);
+unsigned int APHash (const char* str, unsigned int length);
+void set () { int i; for (i = 0; i < 11380005; ++i) b[i].present = false; b[i].qtdColisoes = 0;}
+tripair contaErros (char * filename);
+int contaDicio ();
 
 
-int main () {
-	FILE *fp = fopen("hashs.txt", "w");
-	unsigned int i = 0, rs, hesh = 6381921;
 
-	carregaDicio ("dicioPadrao");
+int main (int argc, char * argv[]) {
+  struct rusage tempo_inicial, tempo_final;
+  char * dicionario, * arqTexto;
+  int qtdePalavrasDic;
+  tripair texto;
+  double tempo_carga = 0.0, tempo_calc_tamanho_dic = 0.0;
+  bool carga;
 
-	for(i = 0; i < 1049939; ++i) {
-		rs = PJWHash (a[i].pal, strlen(a[i].pal));
-		fprintf(fp, "%u\n", rs);
-		if (rs == hesh) {
-			printf ("[%s]\n", a[i].pal);
-		}
-	}
+  set ();
 
-	fclose(fp);
+  dicionario = (argc == 3) ? argv[1] : NOME_DICIONARIO;
+
+  if (argc != 2 && argc != 3) {
+      printf("Uso: %s [nomeArquivoDicionario] nomeArquivoTexto\n", argv[0]);
+      return NUM_ARGS_INCORRETO;
+  }
+
+  getrusage(RUSAGE_SELF, &tempo_inicial);
+    carga = carregaDicio(dicionario);
+  getrusage(RUSAGE_SELF, &tempo_final);
+
+  if (!carga) {
+    printf("Dicionario nao carregado!\n");
+    return ARQDICIO_NAOCARREGADO;
+  }
+
+  tempo_carga = calcula_tempo (&tempo_inicial, &tempo_final);
 
 
-	return 0;
+  arqTexto = (argc == 3) ? argv[2] : argv[1]; 
+  texto = contaErros(arqTexto);
+
+  if (texto.qtdErros == -1 && texto.qtdPalavras == -1) {
+      printf ("Nao foi possivel abrir o arquivo de texto %s.\n", arqTexto);
+      return ARQTEXTO_ERROABERTURA;
+  }
+
+
+  getrusage(RUSAGE_SELF, &tempo_inicial);
+    qtdePalavrasDic = contaDicio ();
+  getrusage(RUSAGE_SELF, &tempo_final);
+
+  tempo_calc_tamanho_dic = calcula_tempo (&tempo_inicial, &tempo_final);
+
+
+
+
+  printf("\nTOTAL DE PALAVRAS ERRADAS NO TEXTO      : %d\n",   texto.qtdErros);
+    printf("TOTAL DE PALAVRAS DO DICIONARIO         : %d\n",   qtdePalavrasDic);
+    printf("TOTAL DE PALAVRAS DO TEXTO              : %d\n",   texto.qtdPalavras);
+    printf("TEMPO GASTO COM CARGA DO DICIONARIO     : %.2f\n", tempo_carga);
+    printf("TEMPO GASTO COM CHECK DO ARQUIVO        : %.2f\n", texto.tempoCheck);
+    printf("TEMPO GASTO P CALCULO TAMANHO DICIONARIO: %.2f\n", tempo_calc_tamanho_dic);
+    printf("------------------------------------------------------\n");
+    printf("T E M P O   T O T A L                   : %.2f\n\n",
+     tempo_carga + texto.tempoCheck + tempo_calc_tamanho_dic);
+    printf("------------------------------------------------------\n");
+
+  return 0;
 }
 
 
-double calcula_tempo (const struct rusage *b, const struct rusage *a) {
+
+bool carregaDicio (char *filename) {
+  FILE *fp = fopen(filename, "r");
+  char c[46];
+  unsigned int indiceHash, posiColisao, totcolisoes = 0;
+
+  if (fp == NULL) return false;
+
+  while (fscanf(fp, "%s", c) > 0) {
+    indiceHash = APHash(c, strlen(c));
+    posiColisao = b[indiceHash].qtdColisoes;
+
+
+    if (b[indiceHash].present == false) {
+      strcpy(b[indiceHash].palavra, c);
+      b[indiceHash].present = true;
+    } else {
+      posiColisao = b[indiceHash].qtdColisoes;
+
+      b[indiceHash].c[posiColisao] = malc(ch);
+      strcpy(b[indiceHash].c[posiColisao]->palavra, c);
+
+      b[indiceHash].qtdColisoes++;
+
+      totcolisoes++;
+    }
+  }
+
+  fclose(fp);
+
+  return true;
+}
+
+
+
+tripair contaErros (char * filename) {
+  FILE *fp = fopen(filename, "r");
+  int indice = 0, i;
+  unsigned int indiceHash;
+  char lowered[46], original[46], c;
+  tripair ans, fail; 
+  struct rusage tempo_inicial, tempo_final;
+  bool equal = false;
+
+  ans.qtdPalavras = ans.qtdErros = ans.tempoCheck = 0;
+
+  if (fp == NULL) {
+    fail.qtdPalavras = fail.qtdErros = -1;
+    return fail;
+  }
+
+  for (c = fgetc(fp); c != EOF; c = fgetc(fp)) {
+      if (isalpha(c) || (c == '\'' && indice > 0)) {
+        original[indice] = c;
+          lowered[indice++] = tolower(c);
+          if (indice > TAM_MAX) {
+              while ((c = fgetc(fp)) != EOF && isalpha(c));
+              indice = 0;
+          }
+      } else if (isdigit(c)) {
+          while ((c = fgetc(fp)) != EOF && isalnum(c));
+          indice = 0;
+      } else if (indice > 0) {
+          original[indice] = lowered[indice] = '\0';
+          ans.qtdPalavras++;
+
+          indiceHash = APHash(lowered, strlen(lowered));
+
+          getrusage(RUSAGE_SELF, &tempo_inicial);
+            if (strcmp(b[indiceHash].palavra, lowered) == 0) {
+              equal = true;
+            } else if (b[indiceHash].qtdColisoes > 0) {
+              for (i = 0; i < b[indiceHash].qtdColisoes; ++i) 
+                if (strcmp(b[indiceHash].c[i]->palavra, lowered) == 0) equal = true;
+            } else {
+              equal = false;
+            }
+          getrusage(RUSAGE_SELF, &tempo_final);
+          
+          ans.tempoCheck += calcula_tempo(&tempo_inicial, &tempo_final);
+
+          if (equal == false) {
+              printf("%s\n", original);
+              ans.qtdErros++;
+          } else equal = false;
+
+          memset(original, 0, sizeof(original));
+          memset(lowered, 0, sizeof(lowered));
+          indice = 0;
+      }
+  }
+
+  fclose(fp);
+
+  return ans;
+}
+
+
+double calcula_tempo(const struct rusage *b, const struct rusage *a) {
     if (b == NULL || a == NULL)
         return 0;
     else
@@ -68,43 +215,22 @@ double calcula_tempo (const struct rusage *b, const struct rusage *a) {
 }
 
 
-bool carregaDicio (char * filename) {
-	FILE *fp = fopen(filename, "r");
-	long int i = 0;
-	char c[65];
-
-	if (fp == NULL) return false;
-
-	while (fscanf(fp, "%s", c) > 0) {
-		strcpy(a[i++].pal, c);
-	}
-
-	fclose(fp);
-
-	return true;
-}
-
-
-unsigned int PJWHash (const char* str, unsigned int length) {
-   const unsigned int BitsInUnsignedInt = (unsigned int)(sizeof(long int) * 8);
-   const unsigned int ThreeQuarters     = (unsigned int)((BitsInUnsignedInt  * 3) / 4);
-   const unsigned int OneEighth         = (unsigned int)(BitsInUnsignedInt / 8);
-   const unsigned int HighBits          =
-                      (unsigned int)(0xFFFFFFFF) << (BitsInUnsignedInt - OneEighth);
-   unsigned int hash = 0;
-   unsigned int test = 0;
+unsigned int APHash (const char* str, unsigned int length) {
+   unsigned int hash = 0xAAAAAAAA;
    unsigned int i    = 0;
 
    for (i = 0; i < length; ++str, ++i)
    {
-      hash = (hash << OneEighth) + (*str);
-
-      if ((test = hash & HighBits) != 0)
-      {
-         hash = (( hash ^ (test >> ThreeQuarters)) & (~HighBits));
-      }
+      hash ^= ((i & 1) == 0) ? (  (hash <<  7) ^ (*str) * (hash >> 3)) :
+                               (~((hash << 11) + ((*str) ^ (hash >> 5))));
    }
 
-   return hash;
+   return hash % 11380003;
 }
 
+
+int contaDicio () {
+  int i, qtd = 0;
+  for (i = 0; i < 11380003; ++i) if (b[i].present) qtd += 1 + b[i].qtdColisoes;
+  return qtd;
+}
