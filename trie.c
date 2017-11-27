@@ -77,6 +77,7 @@ int main (int argc, char * argv[]) {
 
 	if (texto.qtdErros == -1 && texto.qtdPalavras == -1) {
 		printf ("Nao foi possivel abrir o arquivo de texto %s.\n", arqTexto);
+		destroy (root);
 		return ARQTEXTO_ERROABERTURA;
 	}
 

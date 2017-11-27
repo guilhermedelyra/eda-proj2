@@ -38,6 +38,7 @@ bool carregaDicio (char * filename);
 double calcula_tempo (const struct rusage *b, const struct rusage *a);
 unsigned int APHash (const char* str, unsigned int length);
 void set () { int i; for (i = 0; i < 11380005; ++i) b[i].present = false; b[i].qtdColisoes = 0;}
+void descarrega ();
 tripair contaErros (char * filename);
 int contaDicio ();
 
@@ -48,7 +49,7 @@ int main (int argc, char * argv[]) {
   char * dicionario, * arqTexto;
   int qtdePalavrasDic;
   tripair texto;
-  double tempo_carga = 0.0, tempo_calc_tamanho_dic = 0.0;
+  double tempo_carga = 0.0, tempo_calc_tamanho_dic = 0.0, tempo_limpeza_memoria = 0.0;
   bool carga;
 
   set ();
@@ -77,6 +78,7 @@ int main (int argc, char * argv[]) {
 
   if (texto.qtdErros == -1 && texto.qtdPalavras == -1) {
       printf ("Nao foi possivel abrir o arquivo de texto %s.\n", arqTexto);
+      descarrega ();
       return ARQTEXTO_ERROABERTURA;
   }
 
@@ -90,15 +92,23 @@ int main (int argc, char * argv[]) {
 
 
 
+  getrusage (RUSAGE_SELF, &tempo_inicial);
+    descarrega ();
+  getrusage (RUSAGE_SELF, &tempo_final);
+
+  tempo_limpeza_memoria = calcula_tempo (&tempo_inicial, &tempo_final);
+
+
   printf("\nTOTAL DE PALAVRAS ERRADAS NO TEXTO      : %d\n",   texto.qtdErros);
     printf("TOTAL DE PALAVRAS DO DICIONARIO         : %d\n",   qtdePalavrasDic);
     printf("TOTAL DE PALAVRAS DO TEXTO              : %d\n",   texto.qtdPalavras);
     printf("TEMPO GASTO COM CARGA DO DICIONARIO     : %.2f\n", tempo_carga);
     printf("TEMPO GASTO COM CHECK DO ARQUIVO        : %.2f\n", texto.tempoCheck);
     printf("TEMPO GASTO P CALCULO TAMANHO DICIONARIO: %.2f\n", tempo_calc_tamanho_dic);
+    printf("TEMPO GASTO COM LIMPEZA DA MEMORIA      : %.2f\n", tempo_limpeza_memoria);
     printf("------------------------------------------------------\n");
     printf("T E M P O   T O T A L                   : %.2f\n\n",
-     tempo_carga + texto.tempoCheck + tempo_calc_tamanho_dic);
+     tempo_carga + texto.tempoCheck + tempo_calc_tamanho_dic + tempo_limpeza_memoria);
     printf("------------------------------------------------------\n");
 
   return 0;
@@ -109,7 +119,7 @@ int main (int argc, char * argv[]) {
 bool carregaDicio (char *filename) {
   FILE *fp = fopen(filename, "r");
   char c[46];
-  unsigned int indiceHash, posiColisao, totcolisoes = 0;
+  unsigned int indiceHash, posiColisao;
 
   if (fp == NULL) return false;
 
@@ -122,20 +132,26 @@ bool carregaDicio (char *filename) {
       strcpy(b[indiceHash].palavra, c);
       b[indiceHash].present = true;
     } else {
-      posiColisao = b[indiceHash].qtdColisoes;
-
       b[indiceHash].c[posiColisao] = malc(ch);
       strcpy(b[indiceHash].c[posiColisao]->palavra, c);
 
       b[indiceHash].qtdColisoes++;
-
-      totcolisoes++;
     }
   }
 
   fclose(fp);
 
   return true;
+}
+
+
+void descarrega () {
+  int i, j;
+  for (i = 0; i < 11380003; ++i) 
+    if (b[i].present) 
+      if (b[i].qtdColisoes > 0)
+        for (j = 0; j < b[i].qtdColisoes; ++j)
+          free(b[i].c[j]);
 }
 
 
