@@ -150,7 +150,7 @@ void descarrega () {
   for (i = 0; i < 11380003; ++i) 
     if (b[i].present) 
       if (b[i].qtdColisoes > 0)
-        for (j = 0; j < b[i].qtdColisoes; ++j)
+        for (j = 0; j < b[i].qtdColisoes - 1; ++j)
           free(b[i].c[j]);
 }
 
