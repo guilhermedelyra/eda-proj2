@@ -19,13 +19,14 @@
 #define ARQTEXTO_ERROLEITURA    4
 #define ERRO_DICIO_NAOCARREGADO 5
 #define TAM_MAX                 45
+#define MOD 11380005
 
 typedef struct _char {
   char palavra[46];
   bool present;
   int qtdColisoes;
   struct _char *c[1];
-} ch; ch b[11380005];
+} ch; ch b[MOD];
 
 
 typedef struct _tripair {
@@ -37,7 +38,7 @@ typedef struct _tripair {
 bool carregaDicio (char * filename);
 double calcula_tempo (const struct rusage *b, const struct rusage *a);
 unsigned int APHash (const char* str, unsigned int length);
-void set () { int i; for (i = 0; i < 11380005; ++i) b[i].present = false; b[i].qtdColisoes = 0;}
+void set () { int i; for (i = 0; i < MOD; ++i) b[i].present = false; b[i].qtdColisoes = 0;}
 void descarrega ();
 tripair contaErros (char * filename);
 int contaDicio ();
@@ -203,7 +204,6 @@ tripair contaErros (char * filename) {
           ans.tempoCheck += calcula_tempo(&tempo_inicial, &tempo_final);
 
           if (equal == false) {
-              printf("%s\n", original);
               ans.qtdErros++;
           } else equal = false;
 
@@ -241,12 +241,12 @@ unsigned int APHash (const char* str, unsigned int length) {
                                (~((hash << 11) + ((*str) ^ (hash >> 5))));
    }
 
-   return hash % 11380003;
+   return hash % MOD;
 }
 
 
 int contaDicio () {
   int i, qtd = 0;
-  for (i = 0; i < 11380003; ++i) if (b[i].present) qtd += 1 + b[i].qtdColisoes;
+  for (i = 0; i < MOD; ++i) if (b[i].present) qtd += 1 + b[i].qtdColisoes;
   return qtd;
 }
