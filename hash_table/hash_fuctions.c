@@ -5,6 +5,7 @@
 #include <sys/time.h>
 
 #define TAM_MAX 45
+#define DICIONARIO "1.1million word list.txt"
 
 // Palavra.
 struct words{
@@ -170,7 +171,7 @@ double calcula_tempo(const struct rusage *b, const struct rusage *a) {
 
 int main(int argc, char *argv[]) {
    FILE *dic = NULL;
-   int i=0, tam = countlines("dicioPadrao.txt"), j=0, alf[26];
+   int i=0, tam = countlines(DICIONARIO), j=0, alf[26];
    Words *dic_vet = (Words*) malloc(sizeof(Words) * tam);
    char letra;
    struct rusage tempo_inicial, tempo_final;
@@ -179,7 +180,7 @@ int main(int argc, char *argv[]) {
    double rs, js, pjw, elf, bkdr, sdbm, djb, dek, ap;
 
    alf[0] = 0;
-   dic = fopen("dicioPadrao.txt", "rt");
+   dic = fopen( DICIONARIO, "rt");
    //Carrega dicionário na memória.
    rewind(dic);
    fgets(dic_vet[i++].palavra, sizeof(Words), dic);
@@ -277,17 +278,41 @@ int main(int argc, char *argv[]) {
    free(dek_p);
 
    // Testando APHash para colisões e tempo de hash do dicionário.
+   getrusage(RUSAGE_SELF, &tempo_inicial);
    ap_p = (unsigned int *)malloc(sizeof(unsigned int) * tam);
    for(i=0; i<tam;++i){
       ap_p[i] = APHash(dic_vet[i].palavra, strlen(dic_vet[i].palavra));
    }
-   getrusage(RUSAGE_SELF, &tempo_inicial);
    getrusage(RUSAGE_SELF, &tempo_final);
    ap = calcula_tempo(&tempo_inicial, &tempo_final);
    free(ap_p);
 
-   printf(" RSHash = %lf\n JSHash =  %lf\n PJWHash = %lf\n ELFHash = %lf\n", rs, js, pjw, elf);
-   printf(" BKDRHash = %lf\n SDBMHash = %lf\n DJBHash = %lf\n DEKHash = %lf\n APHash = %lf\n", bkdr, sdbm, djb, dek, ap);
+   printf(" RSHash   = %lf\n JSHash   = %lf\n PJWHash  = %lf\n ELFHash  = %lf\n", rs, js, pjw, elf);
+   printf(" BKDRHash = %lf\n SDBMHash = %lf\n DJBHash  = %lf\n DEKHash  = %lf\n APHash   = %lf\n", bkdr, sdbm, djb, dek, ap);
 
    return 0;
 }
+
+/*
+Dicionário utilizado: DicNãoPadrão 47.812 mil palavras do dicionário padrão
+PJHASH   : 18.418,
+RSHASH   : 121,
+JSHASH   : 112,
+ELFHASH  : 284,
+BKDRHASH : 97,
+SDBMHASH : 102,
+DJBHASH  : 123,
+DEKHASH  : 83,
+APHASH   : 97, 
+
+Dicionário utilizado: DicPadrão utilizado pelo professor
+PJHASH   : ignorado por ser ineficiente,
+RSHASH   : ignorado por ser ineficiente,
+JSHASH   : 953,
+ELFHASH  : ignorado por ser ineficiente,
+BKDRHASH : ignorado por ser ineficiente,
+SDBMHASH : 921,
+DJBHASH  : 896,
+DEKHASH  : 940,
+APHASH   : 857, 
+*/
