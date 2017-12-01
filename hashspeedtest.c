@@ -66,12 +66,9 @@ int main () {
 	for(i = 0; i < 13; ++i) fprintf(fp, "%u\n", rs[i]);
 	fclose(fp);
 
-	getrusage(RUSAGE_SELF, &tempo_inicial);
 	   for(i = 0; i < 13; ++i) {
 	   		rs[i] = JSHash (a[i].pal, strlen(a[i].pal));
 	   	}
-	getrusage(RUSAGE_SELF, &tempo_final);
-	JS = calcula_tempo(&tempo_inicial, &tempo_final);
 
 	
 	qsort(rs, 13, sizeof(unsigned int), compare);
@@ -81,12 +78,9 @@ int main () {
 	for(i = 0; i < 13; ++i) fprintf(fp, "%u\n", rs[i]);
 	fclose(fp);
 
-	getrusage(RUSAGE_SELF, &tempo_inicial);
 	   for(i = 0; i < 13; ++i) {
 	   		rs[i] = PJWHash (a[i].pal, strlen(a[i].pal));
 	   	}
-	getrusage(RUSAGE_SELF, &tempo_final);
-	PJW = calcula_tempo(&tempo_inicial, &tempo_final);
 
 	
 	qsort(rs, 13, sizeof(unsigned int), compare);

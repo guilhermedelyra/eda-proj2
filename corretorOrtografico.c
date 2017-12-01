@@ -3,9 +3,16 @@
 * Projeto  - Arvores e funcoes de hash
 * Verifica corretude de palavras de um arquivo-texto segundo um dicionario carregado em RAM.
  *********************************************************************************************/
+
+/*
+    Djorkaeff Alexandre Vilela Pereira - 16/0026822
+    Guilherme de Lyra - 
+    Guilherme Marques -
+*/
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <stdbool.h>
@@ -23,10 +30,14 @@
 #define ARQTEXTO_ERROLEITURA    4
 #define ERRO_DICIO_NAOCARREGADO 5
 
-struct words{
+struct word{
     char palavra[TAM_MAX];
 };
-typedef struct words Words;
+typedef struct word Word;
+
+Word words;
+int *vetor;
+long size;
 
 /* Retorna true se a palavra estah no dicionario. Do contrario, retorna false */
 bool conferePalavra(const char *palavra) {
@@ -54,12 +65,40 @@ int countlines(const char *filename){
   return count;
 }
 
+/* 
+   Descrição: Hasheia as palavras.
+   Parâmetros: palavra, tamanho da palavra.
+   Retorno: Hash correspondente a palavra.
+*/
+
+unsigned int PJWHash (const char* str, unsigned int length) {
+   const unsigned int BitsInUnsignedInt = (unsigned int)(sizeof(long int) * 8);
+   const unsigned int ThreeQuarters     = (unsigned int)((BitsInUnsignedInt  * 3) / 4);
+   const unsigned int OneEighth         = (unsigned int)(BitsInUnsignedInt / 8);
+   const unsigned int HighBits          =
+                      (unsigned int)(0xFFFFFFFF) << (BitsInUnsignedInt - OneEighth);
+   unsigned int hash = 0;
+   unsigned int test = 0;
+   unsigned int i    = 0;
+
+   for (i = 0; i < length; ++str, ++i)
+   {
+      hash = (hash << OneEighth) + (*str);
+
+      if ((test = hash & HighBits) != 0)
+      {
+         hash = (( hash ^ (test >> ThreeQuarters)) & (~HighBits));
+      }
+   }
+
+   return hash;
+}
+
 /* Carrega dicionario na memoria. Retorna true se sucesso; senao retorna false. */
 bool carregaDicionario(const char *dicionario) {
 
-    FILE * pFile = fopen (dicionario,"rt");;
-    Words *vetor;
-    long size = 0;
+    FILE * pFile = fopen (dicionario,"rt");
+    size = 0;
 
     if (pFile==NULL){
         return false;
@@ -68,13 +107,17 @@ bool carregaDicionario(const char *dicionario) {
     size=countlines(dicionario);
 
 
-    if (size!=0)
-        vetor = (Words *) malloc(size*sizeof(Words));
+    if (size!=0) {
+        vetor = (int *) malloc(size*sizeof(int));
+    }
 
     rewind(pFile);
 
     long i = 0;
-    while(fgets(vetor[i++].palavra, sizeof(Words), pFile)!= NULL);
+    for(i=0; i<size; i++) {
+        fgets(words.palavra, sizeof(Word), pFile);
+        vetor[i]=PJWHash(words.palavra, strlen(words.palavra));
+    }
 
     fclose(pFile);
 
@@ -82,12 +125,13 @@ bool carregaDicionario(const char *dicionario) {
 } /* fim-carregaDicionario */
 
 
+
+
 /* Retorna qtde palavras do dicionario, se carregado; senao carregado retorna zero */
 unsigned int contaPalavrasDic(void) {
 
-    /* construa essa funcao */
+    return size;
 
-    return 0;
 } /* fim-contaPalavrasDic */
 
 
@@ -191,7 +235,7 @@ int main(int argc, char *argv[]) {
             tempo_check += calcula_tempo(&tempo_inicial, &tempo_final);
             /* imprime palavra se nao encontrada no dicionario */
             if (palavraErrada) {
-                printf("%s\n", palavra);
+                //printf("%s\n", palavra);
                 totPalErradas++;
             } /* fim-if */
             /* faz "reset" no indice para recuperar nova palavra no arquivo-texto*/
