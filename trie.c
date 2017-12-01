@@ -14,7 +14,7 @@
 #define ARQTEXTO_ERROABERTURA   3
 #define ARQTEXTO_ERROLEITURA    4
 #define ERRO_DICIO_NAOCARREGADO 5
-#define TAM_MAX                 45
+#define TAM_MAX                 46
 
 #define malc(x) (x*) malloc(sizeof (x))
 

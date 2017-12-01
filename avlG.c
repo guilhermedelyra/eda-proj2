@@ -18,14 +18,14 @@
 #define ARQTEXTO_ERROABERTURA   3
 #define ARQTEXTO_ERROLEITURA    4
 #define ERRO_DICIO_NAOCARREGADO 5
-#define TAM_MAX                 45
+#define TAM_MAX                 46
 
 /* #### ESTRUTURAS DE DADOS ARVORE #### */
 
 
 typedef struct _tree {
-	char conteudo[TAM_MAX+1];
-	int h;
+	char key[TAM_MAX+1];
+	int height;
 	struct _tree *esq, *dir;
 } arv; arv * raiz;
 
@@ -45,13 +45,12 @@ double calcula_tempo(const struct rusage *b, const struct rusage *a);
 arv * busca (arv * raiz, char * el);
 void liberaraiz (arv * ra);
 int height (arv * temp);
-int diff (arv * temp);
-arv * rr (arv * parent);
-arv * ll (arv * parent);
-arv * lr (arv * parent);
-arv * rl (arv * parent);
-arv * balance (arv * temp);
-arv * insert (arv * root, char * conteudo);
+arv* newNode (char * key);
+arv *dirRotate (arv *y);
+arv *esqRotate (arv *x);
+int getBalance (arv *N);
+arv* insert (arv* node, char * key);
+
 
 
 /* #### MAIN ##### */
@@ -212,8 +211,8 @@ double calcula_tempo(const struct rusage *b, const struct rusage *a) {
 
 arv * busca (arv * raiz, char * el) {
 	if (raiz != NULL) {
-		if (strcmp(raiz->conteudo, el) > 0) return busca (raiz->esq, el);
-		if (strcmp(raiz->conteudo, el) < 0) return busca (raiz->dir, el);
+		if (strcmp(raiz->key, el) > 0) return busca (raiz->esq, el);
+		if (strcmp(raiz->key, el) < 0) return busca (raiz->dir, el);
 		return raiz;
 	} else return NULL;
 }
@@ -228,81 +227,12 @@ void liberaraiz (arv * ra) {
 }
 
 
-int height (arv * temp) {
-	int h = 0;
-	if (temp != NULL) {
-		int l_height = height(temp->esq), r_height = height(temp->dir);
-		int max_height = max(l_height, r_height);
-		h = max_height + 1;
-	}
-	return h;
+int height (arv * N) {
+	if (N == NULL) return 0;
+	return N->height;	
 }
 
 
-int diff (arv * temp) {
-	if (temp == NULL) return 0;
-	return height (temp->esq) - height (temp->dir);
-}
-
-
-arv * rr (arv * parent) {
-	arv * temp = parent->dir;
-	parent->dir = temp->esq;
-	temp->esq = parent;
-	return temp;
-}
-
-
-arv * ll (arv * parent) {
-	arv * temp = parent->esq;
-	parent->esq = temp->dir;
-	temp->dir = parent;
-	return temp;
-}
-
-
-arv * lr (arv * parent){
-	arv * temp = parent->esq;
-	parent->esq = rr (temp);
-	return ll (parent);
-}
-
-
-arv * rl (arv *parent) {
-	arv * temp = parent->dir;
-	parent->dir = ll (temp);
-	return rr (parent);
-}
-
-
-arv * balance (arv *temp) {
-	int bal_factor = diff (temp);
-	if (bal_factor > 1) {
-		if (diff(temp->esq) > 0) temp = ll (temp);
-		else temp = lr (temp);
-	} else if (bal_factor < -1) {
-		if (diff(temp->dir) > 0) temp = rl (temp);
-		else temp = rr (temp);
-	}
-	return temp;
-}
-
-
-arv * insert (arv * root, char * conteudo) {
-	if (root == NULL) {
-		root = malc(arv);
-		strcpy(root->conteudo, conteudo);
-		root->esq = NULL;
-		root->dir = NULL;
-		return root;
-	} else if (strcmp(conteudo, root->conteudo) < 0) {
-		root->esq = insert (root->esq, conteudo);
-	} else if (strcmp(conteudo, root->conteudo) > 0) {
-		root->dir = insert(root->dir, conteudo);
-	}
-	root = balance (root);
-	return root;
-}
 
 
 int contaDicio (arv * root) {
@@ -313,4 +243,81 @@ int contaDicio (arv * root) {
 		res += contaDicio (root->dir);
 	}
 	return res;
+}
+
+
+arv* newNode (char * key) {
+    arv* node = malc(arv);
+    strcpy(node->key, key);
+    node->esq = node->dir  = NULL;
+    node->height = 1;
+    return(node);
+}
+
+
+arv *dirRotate (arv *y) {
+    arv *x = y->esq;
+    arv *T2 = x->dir;
+ 
+    x->dir = y;
+    y->esq = T2;
+ 
+    y->height = max(height(y->esq), height(y->dir))+1;
+    x->height = max(height(x->esq), height(x->dir))+1;
+ 
+    return x;
+}
+ 
+
+arv *esqRotate (arv *x) {
+    arv *y = x->dir;
+    arv *T2 = y->esq;
+ 
+    y->esq = x;
+    x->dir = T2;
+ 
+    x->height = max(height(x->esq), height(x->dir))+1;
+    y->height = max(height(y->esq), height(y->dir))+1;
+ 
+    return y;
+}
+ 
+
+int getBalance (arv *N) {
+    if (N == NULL)
+        return 0;
+    return height(N->esq) - height(N->dir);
+}
+ 
+
+arv* insert (arv* node, char * key) {
+    int balance;
+    if (node == NULL) return(newNode(key));
+ 
+    if (strcmp(key, node->key) < 0) node->esq  = insert(node->esq, key);
+    else if (strcmp(key,node->key) > 0) node->dir = insert(node->dir, key);
+    else return node;
+ 
+   
+    node->height = 1 + max(height(node->esq), height(node->dir));
+ 
+    balance = getBalance(node);
+
+    if (balance > 1 && key < node->esq->key)
+        return dirRotate(node);
+ 
+    if (balance < -1 && key > node->dir->key)
+        return esqRotate(node);
+ 
+    if (balance > 1 && key > node->esq->key) {
+        node->esq =  esqRotate(node->esq);
+        return dirRotate(node);
+    }
+ 
+    if (balance < -1 && key < node->dir->key) {
+        node->dir = dirRotate(node->dir);
+        return esqRotate(node);
+    }
+ 
+    return node;
 }
